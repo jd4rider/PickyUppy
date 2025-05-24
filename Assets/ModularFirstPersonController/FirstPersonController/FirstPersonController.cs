@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Linq.Expressions;
+
 
 
 #if UNITY_EDITOR
@@ -137,6 +139,8 @@ public class FirstPersonController : MonoBehaviour
 
     public TrashCounter trashCounter;
 
+    public TrashSFXManager trashSFXManager;
+
     
     public GameObject[] trashFXPrefabs;
 
@@ -163,6 +167,8 @@ public class FirstPersonController : MonoBehaviour
     void Start()
     {
         trashCounter = FindFirstObjectByType<TrashCounter>();
+        trashSFXManager = FindFirstObjectByType<TrashSFXManager>();
+
         if (lockCursor)
         {
             Cursor.lockState = CursorLockMode.Locked;
@@ -214,6 +220,8 @@ public class FirstPersonController : MonoBehaviour
 
     private void Update()
     {
+        
+
         // Trash destroy on click
         if (Input.GetMouseButtonDown(0))
         {
@@ -237,6 +245,7 @@ public class FirstPersonController : MonoBehaviour
 
                         ParticleSystem ps = fx.GetComponent<ParticleSystem>();
                         if (ps != null) ps.Play();
+                        trashSFXManager.PlayRandomTrashSFX();
                     }
                     Destroy(trash);
                     trashCounter.TrashDestroyed();

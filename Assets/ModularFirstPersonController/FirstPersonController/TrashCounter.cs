@@ -18,10 +18,16 @@ public class TrashCounter : MonoBehaviour
     {
         destroyedTrash++;
         UpdateText();
+        if (destroyedTrash >= totalTrash)
+        {
+            Debug.Log("All trash bags collected!");
+            // Here you can trigger the end level logic, e.g., show a UI panel or load a new scene
+            FindFirstObjectByType<TriggerEnd>().EndLevel();
+        }
     }
 
     void UpdateText()
     {
-        counterText.text = $"{destroyedTrash} / {totalTrash} Trash Removed";
+        counterText.text = $"{destroyedTrash} / {totalTrash} Trash Bags";
     }
 }
