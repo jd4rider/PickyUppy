@@ -135,6 +135,11 @@ public class FirstPersonController : MonoBehaviour
     private Material originalTrashMaterial;
     public Material highlightMaterial;
 
+    public TrashCounter trashCounter;
+
+    
+    public GameObject[] trashFXPrefabs;
+
     #endregion
 
     private void Awake()
@@ -157,7 +162,8 @@ public class FirstPersonController : MonoBehaviour
 
     void Start()
     {
-        if(lockCursor)
+        trashCounter = FindFirstObjectByType<TrashCounter>();
+        if (lockCursor)
         {
             Cursor.lockState = CursorLockMode.Locked;
         }
@@ -215,19 +221,29 @@ public class FirstPersonController : MonoBehaviour
             Ray rayy = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
             if (Physics.Raycast(rayy, out RaycastHit hitt, 100f))
             {
-                Debug.Log("Hit: " + hitt.collider.gameObject.name);
                 if (hitt.collider.CompareTag("Trash"))
                 {
                     // Destroy the trash object
                     // This is a simple example, you might want to add effects or sounds here
                     GameObject trash = hitt.collider.gameObject;
+                    // Spawn the FX at the trash object's position
+                    if (trashFXPrefabs != null && trashFXPrefabs.Length > 0)
+                    {
+                        int index = UnityEngine.Random.Range(0, trashFXPrefabs.Length);
+                        GameObject selectedFX = trashFXPrefabs[index];
+
+                        Vector3 fxPosition = trash.GetComponent<Renderer>()?.bounds.center ?? trash.transform.position;
+                        GameObject fx = Instantiate(selectedFX, fxPosition, Quaternion.identity);
+
+                        ParticleSystem ps = fx.GetComponent<ParticleSystem>();
+                        if (ps != null) ps.Play();
+                    }
                     Destroy(trash);
-                    Debug.Log("Destroyed: " + trash.name);
+                    trashCounter.TrashDestroyed();
                 }
             }
         }
         Ray ray = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-        Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.red);
         if (Physics.Raycast(ray, out RaycastHit hit, 100f))
         {
             Console.WriteLine(hit.collider.gameObject.name);
@@ -627,6 +643,10 @@ public class FirstPersonController : MonoBehaviour
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         GUILayout.Label("Camera Setup", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = 13 }, GUILayout.ExpandWidth(true));
         EditorGUILayout.Space();
+
+        SerializedProperty trashFXPrefabsProp = SerFPC.FindProperty("trashFXPrefabs");
+
+        EditorGUILayout.PropertyField(trashFXPrefabsProp, new GUIContent("Trash FX Prefabs", "List of particle effects to spawn when trash is destroyed."));
 
         fpc.highlightMaterial = (Material)EditorGUILayout.ObjectField(new GUIContent("Highlight Material", "Material to be used for highlighting trash."), fpc.highlightMaterial, typeof(Material), true);
 
